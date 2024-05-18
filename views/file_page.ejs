@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>File Details</title>
+		<link rel="stylesheet" href="/styles.css" />
+	</head>
+	<body>
+		<h1>File Details</h1>
+		<p id="fileStatus">
+			<% if (status === 1) { %>
+			<strong>File Name:</strong>
+			<span style="font-style: italic"><%= fileName %></span>
+			<br />
+			<strong>File Type:</strong>
+			<span style="font-style: italic">.<%= fileType %></span>
+			<br />
+			<a href="/download/<%= fileID %>" download>Download File</a>
+			<% } else { %> File not found. <% } %>
+		</p>
+	</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>File Sharing App</title>
+		<link rel="stylesheet" href="/styles.css" />
+	</head>
+	<body>
+		<h1>File Sharing App</h1>
+		<form id="uploadForm" enctype="multipart/form-data" class="form">
+			<input type="file" name="file" id="fileInput" required />
+			<button type="submit">Upload</button>
+		</form>
+		<p id="uploadStatus"></p>
+
+		<script>
+			const serverIp = "<%= serverIp %>";
+			console.log(serverIp);
+			document
+				.getElementById("uploadForm")
+				.addEventListener("submit", function (e) {
+					e.preventDefault();
+
+					var fileInput = document.getElementById("fileInput");
+					var file = fileInput.files[0];
+					var formData = new FormData();
+					formData.append("file", file);
+
+					var uploadStatus = document.getElementById("uploadStatus");
+					uploadStatus.innerHTML = "Uploading...";
+
+					var xhr = new XMLHttpRequest();
+					xhr.open("POST", "/upload", true);
+					xhr.onload = function () {
+						if (xhr.status === 200) {
+							var fileID = JSON.parse(xhr.responseText).file_id;
+							uploadStatus.innerHTML =
+								'Upload complete! Link: <a href="/' +
+								fileID +
+								'">http://' +
+								serverIp +
+								":8000/" +
+								fileID +
+								"</a>";
+						} else {
+							uploadStatus.innerHTML = "Error uploading file.";
+						}
+					};
+					xhr.send(formData);
+				});
+		</script>
+	</body>
+</html>
