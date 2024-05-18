@@ -107,7 +107,7 @@ app.get("/:fileID", (req, res) => {
 		} else {
 			res.render("file_page", {
 				fileName: null,
-				fileType: file.slice(file.lastIndexOf(".") + 1),
+				fileType: null,
 				fileID: fileID,
 				status: 0,
 			});
