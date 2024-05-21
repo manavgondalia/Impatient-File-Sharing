@@ -5,15 +5,23 @@ const app = express();
 const fs = require("fs");
 const crypto = require("crypto");
 const os = require("os");
+const dotenv = require("dotenv");
 
-app.set("view engine", "ejs");
+dotenv.config();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs"); // Set the view engine to EJS
 
-app.use(express.static("public"));
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+app.use(express.static("public")); // Serve static files from the public directory
+
+if (!fs.existsSync("data")) {
+	fs.mkdirSync("data");
+}
 
 function ge() {
+	// Retrieving the server IP address
 	const interfaces = os.networkInterfaces();
 	for (const name of Object.keys(interfaces)) {
 		for (const net of interfaces[name]) {
@@ -25,10 +33,13 @@ function ge() {
 	return "localhost";
 }
 
-console.log(ge());
+console.log("The server IP is:", ge());
 
 const storage = multer.diskStorage({
+	// Config for multer
 	destination: function (req, file, cb) {
+		// create the data directory if it doesn't exist
+
 		cb(null, "data/");
 	},
 	filename: function (req, file, cb) {
@@ -49,7 +60,7 @@ const storage = multer.diskStorage({
 	},
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage }); // multer instance
 
 app.get("/", (req, res) => {
 	res.render("index", { serverIp: ge() });
@@ -84,7 +95,7 @@ app.post("/upload", (req, res) => {
 // Serve the file details page
 app.get("/:fileID", (req, res) => {
 	const fileID = req.params.fileID;
-	console.log("File ID for retrieval:", fileID);
+	console.log("File ID for requested file:", fileID);
 
 	fs.readdir("data", (err, files) => {
 		if (err) {
@@ -129,9 +140,6 @@ app.get("/download/:fileID", (req, res) => {
 			if (f.slice(0, f.lastIndexOf(".")).endsWith(fileID)) return f;
 		});
 
-		// console.log(files, file);
-
-		// download the file
 		if (file) {
 			res.download(`data/${file}`);
 		} else {
@@ -140,9 +148,10 @@ app.get("/download/:fileID", (req, res) => {
 	});
 });
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8000; // Default port; can be changed using environment variable
 
 // Start the server
+// Listen on all network interfaces
 app.listen(PORT, "0.0.0.0", () => {
 	console.log(`Server is running on http://${ge()}:${PORT}`);
 });
