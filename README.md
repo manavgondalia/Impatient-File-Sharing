@@ -1,6 +1,5 @@
 # Node.js File Sharing Server
 
-
 ## Installation
 
 ### Prerequisites
@@ -10,15 +9,16 @@ Make sure you have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.co
 ### Steps
 
 1. Clone the repository:
-    ```sh
-    git clone https://github.com/manavgondalia/File-Sharing.git
-    cd File-Sharing
-    ```
+
+   ```sh
+   git clone https://github.com/manavgondalia/File-Sharing.git
+   cd File-Sharing
+   ```
 
 2. Install dependencies:
-    ```sh
-    npm install
-    ```
+   ```sh
+   npm install
+   ```
 
 ## Usage
 
@@ -29,3 +29,5 @@ To start the server in development mode with hot reloading:
 ```sh
 npm run start
 ```
+
+To access the server, navigate to the link displayed in the console (usually `http://<your-IP>:<port-number>`).
