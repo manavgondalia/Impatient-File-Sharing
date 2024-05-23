@@ -1,4 +1,8 @@
-# Node.js File Sharing Server
+# Impatient: A file sharing solution for the impatient ones
+
+Impatient allows users to easily upload and share files over the local network. The service provides a unique feature where users can obtain a shareable link for the file even before the upload completes. This means the user can start sharing the link immediately, and the recipient can use it to download the file as soon as the upload finishes.
+
+This saves time for the uploader by generating the link on the spot.
 
 ## Installation
 
@@ -24,10 +28,14 @@ Make sure you have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.co
 
 ### Development
 
-To start the server in development mode with hot reloading:
+1. Get your IP address by running the `ipconfig` or `ifconfig` command based on Windows or Unix based OS respectively.
+
+2. Open the `.env` file and update the `SERVER_IP` value to the IP obtained in the previous step.
+
+3. To start the server in development mode with hot reloading:
 
 ```sh
 npm run start
 ```
 
-To access the server, navigate to the link displayed in the console (usually `http://<your-IP>:<port-number>`).
+4. To access the service, navigate to the link displayed in the console (format: `http://<your-IP>:<port-number>`).
