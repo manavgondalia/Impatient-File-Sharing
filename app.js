@@ -22,7 +22,7 @@ if (!fs.existsSync("data")) {
 }
 
 // Map to store file metadata and upload status
-const files = new Map(); // Can be replaced with a database for future
+const files = new Map(); // Can be replaced with a database in future
 
 console.log("The server IP is:", SERVER_IP);
 
@@ -50,7 +50,6 @@ app.get("/", (req, res) => {
 
 // Handle file uploads
 app.post("/upload", (req, res) => {
-	// send this file to the uploader server to be uploaded
 	upload(req, res, (err) => {
 		if (err) {
 			console.error(err);
@@ -68,7 +67,7 @@ app.post("/upload", (req, res) => {
 app.get("/:fileID", (req, res) => {
 	const fileID = req.params.fileID;
 	const fileData = files.get(fileID);
-	console.log(fileData);
+	// console.log(fileData);
 
 	// Wait for upload process to finish
 	if (fileData && fileData.status === "uploaded") {
