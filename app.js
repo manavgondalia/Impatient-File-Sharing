@@ -59,7 +59,10 @@ app.post("/upload", (req, res) => {
 		console.log("File ID:", req.body.file_id);
 		const fileID = req.body.file_id;
 		files.set(fileID, { status: "uploaded" });
-		res.json({ file_id: fileID });
+		res.json({
+			file_id: fileID,
+			link: `http://${SERVER_IP}:${PORT}/${fileID}`,
+		});
 	});
 });
 
