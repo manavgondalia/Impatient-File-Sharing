@@ -44,7 +44,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).single("file"); // Single file upload
 
-app.get("/upload", (req, res) => {
+app.get("/", (req, res) => {
 	res.render("index", { serverIP: SERVER_IP });
 });
 
