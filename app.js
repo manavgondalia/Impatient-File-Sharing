@@ -9,6 +9,7 @@ dotenv.config();
 
 const SERVER_IP = process.env.SERVER_IP || "127.0.0.1";
 const PORT = process.env.PORT || 8000; // Default port; can be changed using environment variable
+const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER || "data"; // Default upload folder; can be changed using environment variable
 
 const app = express();
 
@@ -17,8 +18,8 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(express.static("public")); // Serve static files from the public directory
 
-if (!fs.existsSync("data")) {
-	fs.mkdirSync("data");
+if (!fs.existsSync(UPLOAD_FOLDER)) {
+	fs.mkdirSync(UPLOAD_FOLDER);
 }
 
 // Map to store file metadata and upload status
@@ -26,10 +27,44 @@ const files = new Map(); // Can be replaced with a database in future
 
 console.log("The server IP is:", SERVER_IP);
 
+// In-memory storage for rate limiting
+const rateLimitMap = new Map();
+const REQUEST_LIMIT = 50; // max requests per window
+const WINDOW_SIZE = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+const rateLimiter = (req, res, next) => {
+	const ip = req.ip;
+	const currentTime = Date.now();
+
+	if (!rateLimitMap.has(ip)) {
+		rateLimitMap.set(ip, { count: 1, startTime: currentTime });
+	} else {
+		const rateLimitInfo = rateLimitMap.get(ip);
+		const elapsedTime = currentTime - rateLimitInfo.startTime;
+
+		if (elapsedTime < WINDOW_SIZE) {
+			if (rateLimitInfo.count < REQUEST_LIMIT) {
+				rateLimitInfo.count += 1;
+				rateLimitMap.set(ip, rateLimitInfo);
+			} else {
+				return res
+					.status(429)
+					.json({ message: "Too many requests. Please try again later." });
+			}
+		} else {
+			// Reset rate limit window
+			rateLimitMap.set(ip, { count: 1, startTime: currentTime });
+		}
+	}
+	next();
+};
+
+app.use(rateLimiter);
+
 // Configure multer storage
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
-		cb(null, "data/");
+		cb(null, UPLOAD_FOLDER + "/");
 	},
 	filename: function (req, file, cb) {
 		const ext = path.extname(file.originalname);
@@ -74,7 +109,7 @@ app.get("/:fileID", (req, res) => {
 
 	// Wait for upload process to finish
 	if (fileData && fileData.status === "uploaded") {
-		fs.readdir("data", (err, files) => {
+		fs.readdir(UPLOAD_FOLDER, (err, files) => {
 			if (err) {
 				console.error(err);
 				return res.status(500).send("Server error.");
@@ -113,7 +148,7 @@ app.get("/:fileID", (req, res) => {
 app.get("/download/:fileID", (req, res) => {
 	const fileID = req.params.fileID;
 	// Check if the file ending exactly with fileID exists
-	fs.readdir("data", (err, files) => {
+	fs.readdir(UPLOAD_FOLDER, (err, files) => {
 		if (err) {
 			console.error(err);
 			return res.status(500).send("Server error.");
@@ -126,7 +161,7 @@ app.get("/download/:fileID", (req, res) => {
 
 		// download the file
 		if (file) {
-			res.download(`data/${file}`);
+			res.download(`${UPLOAD_FOLDER}/${file}`);
 		} else {
 			res.status(404).send("File not found.");
 		}
