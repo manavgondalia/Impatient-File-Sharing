@@ -14,38 +14,80 @@
 			<input type="file" name="file" id="fileInput" required />
 			<button type="submit">Upload</button>
 		</form>
-		<p id="uploadStatus"></p>
+		<p id="uploadStatus" style="text-align: center"></p>
+		<div id="warningMessage" style="display: none">
+			<p
+				id="uploadStatusMessage"
+				style="text-align: center; color: red; font-weight: bold"
+			>
+				Please do not close this tab until upload is complete.
+			</p>
+			<img
+				id="uploadLoader"
+				src="loader.svg"
+				alt="Loading"
+				style="margin-left: 0.5em"
+			/>
+		</div>
+
+		<button id="copyLinkButton" onclick="copyLink()" style="display: none">
+			Copy Link
+		</button>
 
 		<script>
 			const serverIP = "<%= serverIP %>";
+
+			function copyToClipboard(value) {
+				var textarea = document.createElement("textarea");
+				textarea.value = value;
+				document.body.appendChild(textarea);
+				textarea.select();
+				try {
+					var successful = document.execCommand("copy");
+					if (successful) {
+						alert("Link copied to clipboard!");
+					} else {
+						alert("Failed to copy link.");
+					}
+				} catch (error) {
+					alert("Failed to copy link: ", error);
+				}
+				document.body.removeChild(textarea);
+			}
+
+			function copyLink() {
+				var shareableLink = document.getElementById("shareableLink").innerHTML;
+				copyToClipboard(shareableLink);
+			}
+
 			const sha256 = function sha256(ascii) {
 				function rightRotate(value, amount) {
 					return (value >>> amount) | (value << (32 - amount));
 				}
 
-				var mathPow = Math.pow;
-				var maxWord = mathPow(2, 32);
-				var lengthProperty = "length";
-				var i, j; // Used as a counter across the whole file
-				var result = "";
+				let mathPow = Math.pow;
+				let maxWord = mathPow(2, 32);
+				let lengthProperty = "length";
+				let i, j; // Used as a counter across the whole file
+				let result = "";
 
-				var words = [];
-				var asciiBitLength = ascii[lengthProperty] * 8;
+				let words = [];
+				let asciiBitLength = ascii[lengthProperty] * 8;
 
 				//* caching results is optional - remove/add slash from front of this line to toggle
 				// Initial hash value: first 32 bits of the fractional parts of the square roots of the first 8 primes
 				// (we actually calculate the first 64, but extra values are just ignored)
-				var hash = (sha256.h = sha256.h || []);
+				let hash = (sha256.h = sha256.h || []);
 				// Round constants: first 32 bits of the fractional parts of the cube roots of the first 64 primes
-				var k = (sha256.k = sha256.k || []);
-				var primeCounter = k[lengthProperty];
+				let k = (sha256.k = sha256.k || []);
+				let primeCounter = k[lengthProperty];
 				/*/
-	var hash = [], k = [];
-	var primeCounter = 0;
+	let hash = [], k = [];
+	let primeCounter = 0;
 	//*/
 
-				var isComposite = {};
-				for (var candidate = 2; primeCounter < 64; candidate++) {
+				let isComposite = {};
+				for (let candidate = 2; primeCounter < 64; candidate++) {
 					if (!isComposite[candidate]) {
 						for (i = 0; i < 313; i += candidate) {
 							isComposite[i] = candidate;
@@ -67,23 +109,23 @@
 
 				// process each chunk
 				for (j = 0; j < words[lengthProperty]; ) {
-					var w = words.slice(j, (j += 16)); // The message is expanded into 64 words as part of the iteration
-					var oldHash = hash;
-					// This is now the undefinedworking hash", often labelled as variables a...g
+					let w = words.slice(j, (j += 16)); // The message is expanded into 64 words as part of the iteration
+					let oldHash = hash;
+					// This is now the undefinedworking hash", often labelled as letiables a...g
 					// (we have to truncate as well, otherwise extra entries at the end accumulate
 					hash = hash.slice(0, 8);
 
 					for (i = 0; i < 64; i++) {
-						var i2 = i + j;
+						let i2 = i + j;
 						// Expand the message into 64 words
 						// Used below if
-						var w15 = w[i - 15],
+						let w15 = w[i - 15],
 							w2 = w[i - 2];
 
 						// Iterate
-						var a = hash[0],
+						let a = hash[0],
 							e = hash[4];
-						var temp1 =
+						let temp1 =
 							hash[7] +
 							(rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + // S1
 							((e & hash[5]) ^ (~e & hash[6])) + // ch
@@ -102,7 +144,7 @@
 												(w2 >>> 10))) | // s1
 									  0);
 						// This is only used once, so *could* be moved below, but it only saves 4 bytes and makes things unreadble
-						var temp2 =
+						let temp2 =
 							(rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + // S0
 							((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2])); // maj
 
@@ -117,7 +159,7 @@
 
 				for (i = 0; i < 8; i++) {
 					for (j = 3; j + 1; j--) {
-						var b = (hash[i] >> (j * 8)) & 255;
+						let b = (hash[i] >> (j * 8)) & 255;
 						result += (b < 16 ? 0 : "") + b.toString(16);
 					}
 				}
@@ -129,13 +171,12 @@
 				.addEventListener("submit", function (e) {
 					e.preventDefault();
 
-					var fileInput = document.getElementById("fileInput");
-					var file = fileInput.files[0];
-					var formData = new FormData();
+					let fileInput = document.getElementById("fileInput");
+					let file = fileInput.files[0];
+					let formData = new FormData();
 
-					var fileName = file.name.slice(0, file.name.lastIndexOf("."));
-					var uniqueLink = Date.now();
-					// hashValue(fileName).then((hash) => {
+					let fileName = file.name.slice(0, file.name.lastIndexOf("."));
+					let uniqueLink = Date.now();
 					const hash = sha256(fileName);
 					const fileID = uniqueLink + "_" + hash.slice(0, 7);
 					formData.append("file_id", fileID);
@@ -143,23 +184,46 @@
 					console.log(fileID);
 
 					uploadStatus.innerHTML =
-						'File will upload in background. Link: <a href="/' +
+						'File will upload in background. <br /> Link: <a href="/' +
 						fileID +
-						'">http://' +
+						'" ' +
+						"id=" +
+						"shareableLink" +
+						">http://" +
 						serverIP +
 						":8000/" +
 						fileID +
 						"</a>";
 
-					var xhr = new XMLHttpRequest();
+					warningMessage.style.display = "flex";
+					let uploadStatusMessage = document.getElementById(
+						"uploadStatusMessage"
+					);
+					uploadStatusMessage.innerHTML =
+						"Please do not close this tab until upload is complete.";
+					let uploadLoader = document.getElementById("uploadLoader");
+					uploadLoader.style.display = "block";
+
+					let copyLinkButton = document.getElementById("copyLinkButton");
+					copyLinkButton.style.display = "block";
+					let xhr = new XMLHttpRequest();
 					xhr.open("POST", "/upload", true);
 					xhr.onload = function () {
 						if (xhr.status === 200) {
 							console.log("Success!");
+							localStorage.setItem("uploadStatus", "success");
+							let uploadStatusMessage = document.getElementById(
+								"uploadStatusMessage"
+							);
+							uploadStatusMessage.innerHTML =
+								"File uploaded successfully. Can close this tab now.";
+							let uploadLoader = document.getElementById("uploadLoader");
+							uploadLoader.style.display = "none";
 						} else {
-							var uploadStatus = document.getElementById("uploadStatus");
+							let uploadStatus = document.getElementById("uploadStatus");
 							uploadStatus.innerHTML =
 								"Error uploading file. Link will not work.";
+							localStorage.setItem("uploadStatus", "failure");
 						}
 					};
 					xhr.send(formData);

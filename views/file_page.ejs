@@ -9,6 +9,20 @@
 	</head>
 	<body>
 		<h1>File Details</h1>
+		<div id="loadingAnimation">
+			<% if (status === 0) { %>
+			<div class="lds-roller">
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+			<% } %>
+		</div>
 		<p id="fileStatus">
 			<% if (status === 1) { %>
 			<strong>File Name:</strong>
@@ -18,7 +32,37 @@
 			<span style="font-style: italic">.<%= fileType %></span>
 			<br />
 			<a href="/download/<%= fileID %>" download>Download File</a>
-			<% } else { %> File not found or invalid URL. <% } %>
+			<% } else { %> File not found or invalid URL. Upload may be in progress,
+			please wait. <% } %>
 		</p>
+		<script>
+			function uploadStatusUpdate(status, alreadyAlerted = false) {
+				if (status === "success") {
+					if (!alreadyAlerted) {
+						window.alert(
+							"File uploaded successfully and ready for download! Click OK to view file."
+						);
+					}
+					localStorage.removeItem("uploadStatus");
+					window.location.reload();
+				} else if (status === "failed") {
+					window.alert(
+						"File upload failed. Please ask the sender to upload again."
+					);
+					localStorage.removeItem("uploadStatus");
+				}
+			}
+
+			var storedStatus = localStorage.getItem("uploadStatus");
+			if (storedStatus) {
+				uploadStatusUpdate(storedStatus, 1);
+			}
+
+			window.addEventListener("storage", function (event) {
+				if (event.key === "uploadStatus") {
+					uploadStatusUpdate(event.newValue);
+				}
+			});
+		</script>
 	</body>
 </html>
