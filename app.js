@@ -116,7 +116,8 @@ app.get("/:fileID", (req, res) => {
 			}
 
 			const file = files.find((f) => {
-				if (f.slice(0, f.lastIndexOf(".")).endsWith(fileID)) return f;
+				const fileNameWithoutExtension = f.includes('.') ? f.slice(0, f.lastIndexOf('.')) : f;
+				return fileNameWithoutExtension.endsWith(fileID);
 			});
 
 			if (file) {
@@ -159,6 +160,7 @@ app.get("/download/:fileID", (req, res) => {
 			const fileNameWithoutExtension = f.includes(".")
 				? f.slice(0, f.lastIndexOf("."))
 				: f;
+			console.log(fileNameWithoutExtension, fileID);
 			return fileNameWithoutExtension.endsWith(fileID);
 		});
 
