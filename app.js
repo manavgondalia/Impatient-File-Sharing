@@ -170,6 +170,8 @@ app.get("/download/:fileID", (req, res) => {
 
 // Start the server
 // Listen on all network interfaces
-app.listen(PORT, "0.0.0.0", () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
 	console.log(`Server is running on http://${SERVER_IP}:${PORT}`);
 });
+
+server.setTimeout(0); // Disable the timeout
