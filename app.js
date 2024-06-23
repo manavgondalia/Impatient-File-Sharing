@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 // const cors = require("cors");
 const dotenv = require("dotenv");
+const timeout = require("connect-timeout");
 
 dotenv.config();
 
@@ -12,6 +13,8 @@ const PORT = process.env.PORT || 8000; // Default port; can be changed using env
 const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER || "data"; // Default upload folder; can be changed using environment variable
 
 const app = express();
+
+app.use(timeout("4320000"));
 
 app.set("view engine", "ejs"); // Set the view engine to EJS
 app.use(express.json()); // Parse JSON bodies
@@ -59,7 +62,8 @@ const rateLimiter = (req, res, next) => {
 	next();
 };
 
-app.use(rateLimiter);
+// uncomment the below line in case rate limiting is required
+// app.use(rateLimiter); 
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -157,11 +161,8 @@ app.get("/download/:fileID", (req, res) => {
 
 		const file = files.find((f) => {
 			// console.log(f, fileID, f.slice(0, f.lastIndexOf(".")).endsWith(fileID));
-			const fileNameWithoutExtension = f.includes(".")
-				? f.slice(0, f.lastIndexOf("."))
-				: f;
-			console.log(fileNameWithoutExtension, fileID);
-			return fileNameWithoutExtension.endsWith(fileID);
+			const fileNameWithoutExtension = f.includes('.') ? f.slice(0, f.lastIndexOf('.')) : f;
+				return fileNameWithoutExtension.endsWith(fileID);
 		});
 
 		// download the file
@@ -179,4 +180,5 @@ const server = app.listen(PORT, "0.0.0.0", () => {
 	console.log(`Server is running on http://${SERVER_IP}:${PORT}`);
 });
 
-server.setTimeout(0); // Disable the timeout
+server.setTimeout(43200000); // 
+server.headersTimeout = 43200000;
